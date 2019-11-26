@@ -577,21 +577,18 @@ fn schedule_reaping<M>(mut interval: Interval, weak_shared: Weak<SharedPool<M>>)
 where
     M: ManageConnection,
 {
-    std::thread::spawn(move || {
-        std::thread::sleep(std::time::Duration::from_secs(5));
-        spawn(async move {
-            loop {
-                let _ = interval.next().await;
-                match weak_shared.upgrade() {
-                    None => break,
-                    Some(shared) => {
-                        let locked = shared.internals.lock().await;
-                        let _ = shared.sink_error(reap_connections(&shared, locked)).await;
-                    }
+    spawn(async move {
+        loop {
+            let _ = interval.next().await;
+            match weak_shared.upgrade() {
+                None => break,
+                Some(shared) => {
+                    let locked = shared.internals.lock().await;
+                    let _ = shared.sink_error(reap_connections(&shared, locked)).await;
                 }
             }
-        })
-    });
+        }
+    })
 }
 
 impl<M: ManageConnection> Pool<M> {
@@ -613,7 +610,7 @@ impl<M: ManageConnection> Pool<M> {
             let s = Arc::downgrade(&shared);
             if let Some(shared) = s.upgrade() {
                 let interval = Interval::new_interval(shared.statics.reaper_rate);
-                schedule_reaping(interval, s);
+                // schedule_reaping(interval, s);
             }
         }
 
