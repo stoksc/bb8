@@ -577,6 +577,7 @@ fn schedule_reaping<M>(mut interval: Interval, weak_shared: Weak<SharedPool<M>>)
 where
     M: ManageConnection,
 {
+    std::thread::sleep(std::time::Duration::from_secs(5));
     spawn(async move {
         loop {
             let _ = interval.next().await;
