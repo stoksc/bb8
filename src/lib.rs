@@ -26,7 +26,7 @@ use futures::future::ok;
 use futures::lock::{Mutex, MutexGuard};
 use futures::prelude::*;
 use futures::stream::FuturesUnordered;
-use tokio_executor::spawn;
+use actix_rt::spawn;
 use tokio_timer::{Interval, Timeout};
 
 mod util;
@@ -610,7 +610,7 @@ impl<M: ManageConnection> Pool<M> {
             let s = Arc::downgrade(&shared);
             if let Some(shared) = s.upgrade() {
                 let interval = Interval::new_interval(shared.statics.reaper_rate);
-                // schedule_reaping(interval, s);
+                schedule_reaping(interval, s);
             }
         }
 
